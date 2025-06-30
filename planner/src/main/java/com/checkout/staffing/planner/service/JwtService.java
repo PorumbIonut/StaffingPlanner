@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
@@ -105,28 +104,8 @@ public class JwtService {
     return Keys.hmacShaKeyFor(keyBytes);
   }
 
-  public String extractRefreshTokenFromRequest(HttpServletRequest request) {
-    if (request.getCookies() != null) {
-      for (Cookie cookie : request.getCookies()) {
-        if ("refreshToken".equals(cookie.getName())) {
-          return cookie.getValue();
-        }
-      }
-    }
-    return null;
-  }
-
   public String extractAccessTokenFromRequest(HttpServletRequest request) {
-    for (Cookie cookie : request.getCookies()) {
-      if (cookie.getName().equals("accessToken")) {
-        return cookie.getValue();
-      }
-    }
-    for (Cookie cookie : request.getCookies()) {
-      if (cookie.getName().equals("refreshToken")) {
-        return cookie.getValue();
-      }
-    }
-    return null;
+    final String authHeader = request.getHeader("Authorization");
+    return authHeader.substring(7);
   }
 }

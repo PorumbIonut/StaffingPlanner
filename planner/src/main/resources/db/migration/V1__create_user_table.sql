@@ -6,5 +6,5 @@ CREATE TABLE user(
                      email VARCHAR(45) UNIQUE NOT NULL,
                      phone_number VARCHAR(15) NOT NULL,
                      password VARCHAR(255) NOT NULL,
-                     role ENUM('WORKER', 'ADMIN') NOT NULL
+                     role ENUM('EMPLOYEE', 'ADMIN') NOT NULL
 );

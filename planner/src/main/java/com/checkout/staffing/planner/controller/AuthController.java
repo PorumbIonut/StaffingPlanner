@@ -1,12 +1,8 @@
 /* (C) 2025 */
 package com.checkout.staffing.planner.controller;
 
-import com.checkout.staffing.planner.model.dto.AuthRequest;
-import com.checkout.staffing.planner.model.dto.CreateUserDto;
-import com.checkout.staffing.planner.model.dto.JwtTokensDto;
-import com.checkout.staffing.planner.model.dto.UserDto;
+import com.checkout.staffing.planner.model.dto.*;
 import com.checkout.staffing.planner.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +16,8 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping(value = "/register")
-  public UserDto register(@RequestBody CreateUserDto createUserDto) {
-    return authService.register(createUserDto);
+  public ResponseEntity<UserDto> register(@RequestBody CreateUserDto createUserDto) {
+    return ResponseEntity.ok(authService.register(createUserDto));
   }
 
   @PostMapping(
@@ -35,8 +31,9 @@ public class AuthController {
   @PostMapping(
       value = "/refresh",
       consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
-  public ResponseEntity<JwtTokensDto> refresh(HttpServletRequest request) {
-    JwtTokensDto authResponse = authService.refresh(request);
+  public ResponseEntity<JwtTokensDto> refresh(
+      @RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
+    JwtTokensDto authResponse = authService.refresh(refreshTokenRequestDto);
     return ResponseEntity.ok(authResponse);
   }
 }

@@ -24,8 +24,6 @@ public class UserDto {
 
   private String phoneNumber;
 
-  private Boolean emailConfirmed;
-
   public UserDto(User user) {
     this.id = user.getId();
     this.firstName = user.getFirstName();

@@ -1,16 +1,11 @@
 /* (C) 2025 */
 package com.checkout.staffing.planner.service;
 
-import com.checkout.staffing.planner.exceptions.CustomErrorResponse;
-import com.checkout.staffing.planner.exceptions.ErrorCodes;
-import com.checkout.staffing.planner.model.dto.AuthRequest;
-import com.checkout.staffing.planner.model.dto.CreateUserDto;
-import com.checkout.staffing.planner.model.dto.JwtTokensDto;
-import com.checkout.staffing.planner.model.dto.UserDto;
+import com.checkout.staffing.planner.model.dto.*;
 import com.checkout.staffing.planner.model.entity.User;
 import com.checkout.staffing.planner.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +35,7 @@ public class AuthService {
     // check email unique
     User existingUserWithEmail = userRepository.findByEmail(createUserDto.getEmail()).orElse(null);
     if (existingUserWithEmail != null) {
-      throw new CustomErrorResponse(ErrorCodes.BAD_REQUEST_USER_EXISTS, "", "");
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
     }
     User newUser = new User(createUserDto);
     newUser.setPassword(passwordEncoder.encode(createUserDto.getPassword()));
@@ -61,21 +57,20 @@ public class AuthService {
     return jwtService.generateTokenPair(authentication);
   }
 
-  public JwtTokensDto refresh(HttpServletRequest request) {
-    String refreshToken = jwtService.extractRefreshTokenFromRequest(request);
-    if (!jwtService.isRefreshToken(refreshToken)) {
+  public JwtTokensDto refresh(RefreshTokenRequestDto refreshTokenRequest) {
+    if (!jwtService.isRefreshToken(refreshTokenRequest.getRefreshToken())) {
       throw new IllegalArgumentException("Invalid refresh token");
     }
 
-    String user = jwtService.extractUsernameFromToken(refreshToken);
+    String user = jwtService.extractUsernameFromToken(refreshTokenRequest.getRefreshToken());
     UserDetails userDetails = userDetailsService.loadUserByUsername(user);
     if (userDetails == null) {
-      throw new CustomErrorResponse(ErrorCodes.BAD_REQUEST_USER_NOT_FOUND);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
     }
 
     UsernamePasswordAuthenticationToken authenticationToken =
         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     String accessToken = jwtService.generateAccessToken(authenticationToken);
-    return new JwtTokensDto(accessToken, refreshToken);
+    return new JwtTokensDto(accessToken, refreshTokenRequest.getRefreshToken());
   }
 }
