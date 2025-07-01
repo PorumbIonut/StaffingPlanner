@@ -30,7 +30,6 @@ public class ShiftService {
 
   public MessageDto addWishBook(
       Authentication authentication, List<CreateWishBookDto> createWishBookDto) {
-    // get each desired shift and check if it's valid
     if (createWishBookDto != null && !createWishBookDto.isEmpty()) {
       User employee =
           userRepository
